@@ -32,6 +32,7 @@ func ListOrders(c *gin.Context) {
 	country := c.Query("country")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
+	sortBy := c.DefaultQuery("sort", "placed_desc")
 
 	q := db.Model(&models.Order{})
 
@@ -58,10 +59,14 @@ func ListOrders(c *gin.Context) {
 	q.Count(&total)
 
 	var orders []models.Order
+	orderClause := "orders.purchased_at DESC, orders.created_at DESC"
+	if sortBy == "placed_asc" {
+		orderClause = "orders.purchased_at ASC, orders.created_at ASC"
+	}
 	q.Preload("Customer").
 		Preload("OrderItems").
 		Preload("OrderItems.Product").
-		Order("orders.created_at DESC").
+		Order(orderClause).
 		Limit(size).Offset((page - 1) * size).
 		Find(&orders)
 

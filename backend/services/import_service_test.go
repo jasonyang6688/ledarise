@@ -29,3 +29,17 @@ func TestCommitImportCacheMergesOnlyAfterExplicitCommit(t *testing.T) {
 		t.Fatalf("expected committed ID 2, got %d", got)
 	}
 }
+
+func TestLimitStringPreservesShortValue(t *testing.T) {
+	got := limitString("M5V 3A9", 20)
+	if got != "M5V 3A9" {
+		t.Fatalf("expected short value to be unchanged, got %q", got)
+	}
+}
+
+func TestLimitStringTruncatesLongValueByRunes(t *testing.T) {
+	got := limitString("Île-de-France postal routing overflow", 12)
+	if got != "Île-de-Franc" {
+		t.Fatalf("expected rune-safe truncation, got %q", got)
+	}
+}

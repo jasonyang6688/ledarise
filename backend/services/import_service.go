@@ -316,6 +316,17 @@ func parseInt(s string) int {
 	return i
 }
 
+func limitString(value string, maxRunes int) string {
+	if maxRunes <= 0 {
+		return ""
+	}
+	runes := []rune(strings.TrimSpace(value))
+	if len(runes) <= maxRunes {
+		return string(runes)
+	}
+	return string(runes[:maxRunes])
+}
+
 func lookupImportCache(global, batch map[string]uint, key string) (uint, bool) {
 	if id, ok := batch[key]; ok {
 		return id, true
@@ -715,21 +726,21 @@ func runImport(taskID, filePath string) {
 
 			batch = append(batch, batchRow{
 				rowNum:      rowNum,
-				orderNo:     orderNo,
+				orderNo:     limitString(orderNo, 50),
 				custKey:     custKey,
-				custName:    custName,
-				custPhone:   phone,
-				shipAddr:    addr,
-				shipCity:    city,
-				shipState:   state,
-				shipZip:     zip,
-				shipCountry: country,
+				custName:    limitString(custName, 100),
+				custPhone:   limitString(phone, 30),
+				shipAddr:    limitString(addr, 255),
+				shipCity:    limitString(city, 100),
+				shipState:   limitString(state, 100),
+				shipZip:     limitString(zip, 100),
+				shipCountry: limitString(country, 50),
 				status:      status,
 				grandTotal:  grandTotal,
 				shipping:    shipping,
-				sku:         sku,
+				sku:         limitString(sku, 100),
 				qty:         qty,
-				coupon:      coupon,
+				coupon:      limitString(coupon, 50),
 				purchasedAt: purchasedAt,
 			})
 		}()

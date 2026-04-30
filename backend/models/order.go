@@ -26,7 +26,7 @@ type Order struct {
 	ShipAddress    string     `gorm:"size:255" json:"ship_address"`
 	ShipCity       string     `gorm:"size:100" json:"ship_city"`
 	ShipState      string     `gorm:"size:100" json:"ship_state"`
-	ShipZip        string     `gorm:"size:20" json:"ship_zip"`
+	ShipZip        string     `gorm:"size:100" json:"ship_zip"`
 	ShipCountry    string     `gorm:"size:50" json:"ship_country"`
 	PurchasedAt    *time.Time `gorm:"index" json:"purchased_at"`
 	CreatedAt      time.Time  `json:"created_at"`
