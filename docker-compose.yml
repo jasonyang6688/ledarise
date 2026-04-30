@@ -1,0 +1,109 @@
+name: ledarise
+
+services:
+  # ───────────────────────────────────────────────────────────────────────
+  # MySQL 8.0 — primary datastore, persisted via named volume
+  # ───────────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: ledarise-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-jason6688}
+      MYSQL_DATABASE:      ${MYSQL_DATABASE:-ledarise_db}
+      TZ:                  ${TZ:-Asia/Shanghai}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=caching_sha2_password
+      - --max_allowed_packet=64M
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      # Bind only to localhost on the host so MySQL is not internet-exposed.
+      # Comment out entirely to keep MySQL fully internal to the compose network.
+      - "127.0.0.1:3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-jason6688}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ledarise-net
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Backend (Go + Gin) — REST API on :8080
+  # ───────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ledarise-backend:latest
+    container_name: ledarise-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST:             mysql
+      DB_PORT:             "3306"
+      DB_USER:             root
+      DB_PASSWORD:         ${MYSQL_ROOT_PASSWORD:-jason6688}
+      DB_NAME:             ${MYSQL_DATABASE:-ledarise_db}
+      JWT_SECRET:          ${JWT_SECRET:-change_me_in_production_please}
+      JWT_EXPIRE_HOURS:    "24"
+      SERVER_PORT:         "8080"
+      GIN_MODE:            release
+      ALLOWED_ORIGINS:     ${ALLOWED_ORIGINS:-http://localhost:3000}
+      UPLOAD_DIR:          /app/uploads
+      MAX_UPLOAD_SIZE_MB:  "50"
+      TZ:                  ${TZ:-Asia/Shanghai}
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    networks:
+      - ledarise-net
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Frontend (Next.js 14 standalone) — :3000
+  # NEXT_PUBLIC_API_BASE_URL must be the URL the *browser* uses, not the
+  # internal docker network DNS, because it is baked into the client bundle.
+  # Use "/" only when a reverse proxy forwards same-origin /api/* to backend.
+  # ───────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8080}
+    image: ledarise-frontend:latest
+    container_name: ledarise-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV:                 production
+      PORT:                     "3000"
+      HOSTNAME:                 0.0.0.0
+      NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8080}
+      TZ:                       ${TZ:-Asia/Shanghai}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - ledarise-net
+
+# ───────────────────────────────────────────────────────────────────────────
+# Volumes & networks
+# ───────────────────────────────────────────────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  ledarise-net:
+    driver: bridge
