@@ -55,7 +55,7 @@ services:
       JWT_EXPIRE_HOURS:    "24"
       SERVER_PORT:         "8080"
       GIN_MODE:            release
-      ALLOWED_ORIGINS:     ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001}
+      ALLOWED_ORIGINS:     ${ALLOWED_ORIGINS:-http://localhost:3000,https://www.ledarise.com}
       UPLOAD_DIR:          /app/uploads
       MAX_UPLOAD_SIZE_MB:  "50"
       TZ:                  ${TZ:-Asia/Shanghai}
