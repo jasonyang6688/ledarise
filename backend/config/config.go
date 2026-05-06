@@ -9,38 +9,40 @@ import (
 )
 
 type Config struct {
-	DBHost            string
-	DBPort            string
-	DBUser            string
-	DBPassword        string
-	DBName            string
-	JWTSecret         string
-	JWTExpireHours    int
-	ServerPort        string
-	GinMode           string
-	AllowedOrigins    string
-	UploadDir         string
-	MaxUploadSizeMB   int
+	DBHost          string
+	DBPort          string
+	DBUser          string
+	DBPassword      string
+	DBName          string
+	JWTSecret       string
+	JWTExpireHours  int
+	ServerPort      string
+	GinMode         string
+	AllowedOrigins  string
+	UploadDir       string
+	MaxUploadSizeMB int
 }
 
 var cfg Config
+
+const defaultAllowedOrigins = "https://www.ledarise.com"
 
 func Load() {
 	_ = godotenv.Load()
 
 	cfg = Config{
-		DBHost:           getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:           getEnv("DB_PORT", "3306"),
-		DBUser:           getEnv("DB_USER", "root"),
-		DBPassword:       getEnv("DB_PASSWORD", "jason6688"),
-		DBName:           getEnv("DB_NAME", "ledarise_db"),
-		JWTSecret:        getEnv("JWT_SECRET", "change_me_in_production"),
-		JWTExpireHours:   getEnvInt("JWT_EXPIRE_HOURS", 24),
-		ServerPort:       getEnv("SERVER_PORT", "8080"),
-		GinMode:          getEnv("GIN_MODE", "debug"),
-		AllowedOrigins:   getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
-		UploadDir:        getEnv("UPLOAD_DIR", "./uploads"),
-		MaxUploadSizeMB:  getEnvInt("MAX_UPLOAD_SIZE_MB", 50),
+		DBHost:          getEnv("DB_HOST", "127.0.0.1"),
+		DBPort:          getEnv("DB_PORT", "3306"),
+		DBUser:          getEnv("DB_USER", "root"),
+		DBPassword:      getEnv("DB_PASSWORD", "jason6688"),
+		DBName:          getEnv("DB_NAME", "ledarise_db"),
+		JWTSecret:       getEnv("JWT_SECRET", "change_me_in_production"),
+		JWTExpireHours:  getEnvInt("JWT_EXPIRE_HOURS", 24),
+		ServerPort:      getEnv("SERVER_PORT", "8080"),
+		GinMode:         getEnv("GIN_MODE", "debug"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", defaultAllowedOrigins),
+		UploadDir:       getEnv("UPLOAD_DIR", "./uploads"),
+		MaxUploadSizeMB: getEnvInt("MAX_UPLOAD_SIZE_MB", 50),
 	}
 }
 

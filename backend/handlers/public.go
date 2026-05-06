@@ -17,12 +17,16 @@ func PublicListProducts(c *gin.Context) {
 	page, size := parsePage(c)
 
 	category := c.Query("category")
+	keyword := c.Query("keyword")
 	color := c.Query("color")
 	minPriceStr := c.Query("min_price")
 	maxPriceStr := c.Query("max_price")
 	sortBy := c.DefaultQuery("sort", "newest")
 
 	q := db.Model(&models.Product{}).Where("status = ?", models.ProductStatusPublished)
+	if like, ok := productKeywordLike(keyword); ok {
+		q = q.Where("name LIKE ? OR sku LIKE ?", like, like)
+	}
 	if category != "" {
 		q = q.Where("category = ?", category)
 	}
@@ -82,16 +86,16 @@ type PublicOrderItemInput struct {
 }
 
 type PublicOrderInput struct {
-	CustomerName   string               `json:"customer_name"`
-	CustomerPhone  string               `json:"customer_phone"`
-	CustomerEmail  string               `json:"customer_email"`
-	ShippingMethod string               `json:"shipping_method"`
-	ShipAddress    string               `json:"ship_address"`
-	ShipCity       string               `json:"ship_city"`
-	ShipState      string               `json:"ship_state"`
-	ShipZip        string               `json:"ship_zip"`
-	ShipCountry    string               `json:"ship_country"`
-	Note           string               `json:"note"`
+	CustomerName   string                 `json:"customer_name"`
+	CustomerPhone  string                 `json:"customer_phone"`
+	CustomerEmail  string                 `json:"customer_email"`
+	ShippingMethod string                 `json:"shipping_method"`
+	ShipAddress    string                 `json:"ship_address"`
+	ShipCity       string                 `json:"ship_city"`
+	ShipState      string                 `json:"ship_state"`
+	ShipZip        string                 `json:"ship_zip"`
+	ShipCountry    string                 `json:"ship_country"`
+	Note           string                 `json:"note"`
 	Items          []PublicOrderItemInput `json:"items"`
 }
 

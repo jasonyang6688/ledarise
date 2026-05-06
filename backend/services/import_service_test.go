@@ -43,3 +43,19 @@ func TestLimitStringTruncatesLongValueByRunes(t *testing.T) {
 		t.Fatalf("expected rune-safe truncation, got %q", got)
 	}
 }
+
+func TestImportProductPriceIsRoundedToTwoDecimals(t *testing.T) {
+	price := importProductPrice(10.005, 0.001)
+
+	if price != 10.00 {
+		t.Fatalf("importProductPrice() = %.12f, want 10.00", price)
+	}
+}
+
+func TestImportProductPriceDoesNotGoNegative(t *testing.T) {
+	price := importProductPrice(5.00, 9.99)
+
+	if price != 0 {
+		t.Fatalf("importProductPrice() = %.12f, want 0", price)
+	}
+}

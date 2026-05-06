@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"ledarise-backend/database"
@@ -22,6 +23,14 @@ func parsePage(c *gin.Context) (int, int) {
 	return page, size
 }
 
+func productKeywordLike(keyword string) (string, bool) {
+	trimmed := strings.TrimSpace(keyword)
+	if trimmed == "" {
+		return "", false
+	}
+	return "%" + trimmed + "%", true
+}
+
 func ListProducts(c *gin.Context) {
 	db := database.DB
 	page, size := parsePage(c)
@@ -31,8 +40,7 @@ func ListProducts(c *gin.Context) {
 	category := c.Query("category")
 
 	q := db.Model(&models.Product{})
-	if keyword != "" {
-		like := "%" + keyword + "%"
+	if like, ok := productKeywordLike(keyword); ok {
 		q = q.Where("name LIKE ? OR sku LIKE ?", like, like)
 	}
 	if status != "" {

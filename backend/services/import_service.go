@@ -310,6 +310,11 @@ func parseFloat(s string) float64 {
 	return f
 }
 
+func importProductPrice(grandTotal, shipping float64) float64 {
+	price := math.Max(0, grandTotal-shipping)
+	return math.Round(price*100) / 100
+}
+
 func parseInt(s string) int {
 	s = strings.TrimSpace(s)
 	i, _ := strconv.Atoi(s)
@@ -475,7 +480,7 @@ func runImport(taskID, filePath string) {
 			}
 			if _, ok := productCache[r.sku]; !ok {
 				if _, pending := newProducts[r.sku]; !pending {
-					price := math.Max(0, r.grandTotal-r.shipping)
+					price := importProductPrice(r.grandTotal, r.shipping)
 					newProducts[r.sku] = &models.Product{
 						Name:     r.sku,
 						SKU:      r.sku,
@@ -568,7 +573,7 @@ func runImport(taskID, filePath string) {
 					return fmt.Errorf("missing product reference for %q", r.sku)
 				}
 
-				price := math.Max(0, r.grandTotal-r.shipping)
+				price := importProductPrice(r.grandTotal, r.shipping)
 				subtotal := price * float64(r.qty)
 
 				// Replace existing order with the same order_no.
